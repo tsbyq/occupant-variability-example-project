@@ -20,7 +20,9 @@ else
   gem 'openstudio-occupant-variability', github: 'tsbyq/openstudio-occupant-variability-gem', branch: 'master'
 end
 
-gem 'openstudio-standards', '0.2.9' # doesn't work in 0.2.8?
+# gem 'openstudio-standards', '0.2.9' # doesn't work in 0.2.8?
+# Use development
+# gem 'openstudio-standards', github: 'NREL/openstudio-standards', branch: 'master'
 
 # simplecov has an unneccesary dependency on native json gem, use fork that does not require this
 gem 'simplecov', github: 'NREL/simplecov'

@@ -33,10 +33,26 @@ rake_task = OpenStudio::Extension::RakeTask.new
 rake_task.set_extension_class(OccupantVariabilityTest::TestProject::TestProject)
 
 
+
+desc 'Check configurations'
+task :run_check do
+  puts '~~~ Check configurations...'
+
+  occ_var = OpenStudio::OccupantVariability::OccupantVariability.new()
+
+  puts "Root dir = #{occ_var.root_dir}"
+  puts "Measure dir = #{occ_var.measures_dir}"
+  puts "File dir = #{occ_var.files_dir}"
+  puts "Doc templates dir = #{occ_var.doc_templates_dir}"
+  puts "Core dir = #{occ_var.core_dir}"
+
+end
+
+
 # User defined tasks
-desc 'Try to run some tests'
-task :run_test do
-  puts '~~ This is a test rake task...'
+desc 'Try to create model from openstudio-standards'
+task :run_create_model_test do
+  puts '~~~ Try to create model from openstudio-standards...'
 
   model_creator =  OpenStudio::OccupantVariability::ModelCreator.new('Test Model',
                                                                      'SmallOfficeDetailed',
@@ -48,7 +64,25 @@ task :run_test do
 
 end
 
-task :run_all => [:run_test]
+
+desc 'Try to apply occupancy simulator measure'
+task :run_apply_occupancy_simulator do
+  puts '~~~ Try to apply occupancy simulator measure...'
+  occ_var_ext = OpenStudio::OccupantVariability::Extension.new
+  baseline_osw_dir = occ_var_ext.files_dir
+  files_dir = occ_var_ext.files_dir
+  apply_occ_sim = OpenStudio::OccupantVariability::OccupancySimulatorApplier.new(baseline_osw_dir, files_dir)
+  osw = apply_occ_sim.create_osw('seed_file_dir', 'weather_file_dir')
+
+  # puts osw
+  #
+  runner = OpenStudio::Extension::Runner.new()
+  runner.run_osw(osw, 'Some Dir')
 
 
+end
+
+
+
+task :run_all => [:run_create_model_test]
 task default: :run_all
