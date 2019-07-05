@@ -3,8 +3,8 @@ source "http://rubygems.org"
 # Allow local for developing
 allow_local = true
 
-occupant_variability_gam_dir = '../openstudio-occupant-variability-gem'
-occupant_variability_gam_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/openstudio-occupant-variability-gem'
+# occupant_variability_gem_dir = '../openstudio-occupant-variability-gem'
+occupant_variability_gem_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/openstudio-occupant-variability-gem'
 
 
 if allow_local && File.exists?('../OpenStudio-extension-gem')
@@ -14,9 +14,11 @@ else
   gem 'openstudio-extension', github: 'NREL/OpenStudio-extension-gem', branch: 'develop'
 end
 
-if allow_local && File.exist?(occupant_variability_gam_dir)
-  gem 'openstudio-occupant-variability', path: occupant_variability_gam_dir
+if allow_local && File.exist?(occupant_variability_gem_dir)
+  puts 'Local!'
+  gem 'openstudio-occupant-variability', path: occupant_variability_gem_dir
 else
+  puts 'Remote!'
   gem 'openstudio-occupant-variability', github: 'tsbyq/openstudio-occupant-variability-gem', branch: 'master'
 end
 

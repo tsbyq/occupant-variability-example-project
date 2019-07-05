@@ -66,18 +66,49 @@ end
 
 
 desc 'Try to apply occupancy simulator measure'
-task :run_apply_occupancy_simulator do
-  puts '~~~ Try to apply occupancy simulator measure...'
+  task :run_apply_occupancy_simulator do
+    puts '~~~ Try to apply occupancy simulator measure...'
+    occ_var_ext = OpenStudio::OccupantVariability::Extension.new
+    baseline_osw_dir = occ_var_ext.files_dir
+    files_dir = occ_var_ext.files_dir
+    apply_occ_sim = OpenStudio::OccupantVariability::OccupancySimulatorApplier.new(baseline_osw_dir, files_dir)
+
+    seed_file_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/TestModel.osm'
+    weather_file_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/TestModel.epw'
+    run_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/rundir'
+
+    osw = apply_occ_sim.create_osw(seed_file_dir, weather_file_dir)
+
+    puts osw
+
+    runner = OpenStudio::Extension::Runner.new()
+    runner.run_osw(osw, run_dir)
+
+
+  end
+
+
+desc 'Try to apply occupancy variability LOD2'
+task :run_apply_LOD2 do
+  puts '~~~ Try to apply occupancy variability LOD2 measures...'
   occ_var_ext = OpenStudio::OccupantVariability::Extension.new
   baseline_osw_dir = occ_var_ext.files_dir
   files_dir = occ_var_ext.files_dir
   apply_occ_sim = OpenStudio::OccupantVariability::OccupancySimulatorApplier.new(baseline_osw_dir, files_dir)
-  osw = apply_occ_sim.create_osw('seed_file_dir', 'weather_file_dir')
 
-  # puts osw
-  #
+  # Use relative path
+  seed_file_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/TestModel.osm'
+  weather_file_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/TestModel.epw'
+  run_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/rundir'
+
+  occ_sch_path = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/openstudio-occupant-variability-gem/lib/files/OccSimulator_out_IDF.csv'
+
+  osw = apply_occ_sim.create_osw(seed_file_dir, weather_file_dir, 2, occ_sch_path, occ_sch_path)
+
+  puts osw
+
   runner = OpenStudio::Extension::Runner.new()
-  runner.run_osw(osw, 'Some Dir')
+  runner.run_osw(osw, run_dir)
 
 
 end
