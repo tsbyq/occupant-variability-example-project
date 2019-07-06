@@ -1,4 +1,3 @@
-
 # Load in the rake tasks from the base openstudio-extension gem
 require 'openstudio/extension/rake_task'
 require 'openstudio/occupant_variability'
@@ -33,12 +32,11 @@ rake_task = OpenStudio::Extension::RakeTask.new
 rake_task.set_extension_class(OccupantVariabilityTest::TestProject::TestProject)
 
 
-
 desc 'Check configurations'
 task :run_check do
   puts '~~~ Check configurations...'
 
-  occ_var = OpenStudio::OccupantVariability::OccupantVariability.new()
+  occ_var = OpenStudio::OccupantVariability::OccupantVariability.new
 
   puts "Root dir = #{occ_var.root_dir}"
   puts "Measure dir = #{occ_var.measures_dir}"
@@ -54,38 +52,38 @@ desc 'Try to create model from openstudio-standards'
 task :run_create_model_test do
   puts '~~~ Try to create model from openstudio-standards...'
 
-  model_creator =  OpenStudio::OccupantVariability::ModelCreator.new('Test Model',
-                                                                     'SmallOfficeDetailed',
-                                                                     '90.1-2013',
-                                                                     'ASHRAE 169-2006-5A',
-                                                                     'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620')
-  model_creator.generate_prototype_model()
+  model_creator = OpenStudio::OccupantVariability::ModelCreator.new('Test Model',
+                                                                    'SmallOfficeDetailed',
+                                                                    '90.1-2013',
+                                                                    'ASHRAE 169-2006-5A',
+                                                                    'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620')
+  model_creator.generate_prototype_model
 
 
 end
 
 
 desc 'Try to apply occupancy simulator measure'
-  task :run_apply_occupancy_simulator do
-    puts '~~~ Try to apply occupancy simulator measure...'
-    occ_var_ext = OpenStudio::OccupantVariability::Extension.new
-    baseline_osw_dir = occ_var_ext.files_dir
-    files_dir = occ_var_ext.files_dir
-    apply_occ_sim = OpenStudio::OccupantVariability::OccupancySimulatorApplier.new(baseline_osw_dir, files_dir)
+task :run_apply_occupancy_simulator do
+  puts '~~~ Try to apply occupancy simulator measure...'
+  occ_var_ext = OpenStudio::OccupantVariability::Extension.new
+  baseline_osw_dir = occ_var_ext.files_dir
+  files_dir = occ_var_ext.files_dir
+  apply_occ_sim = OpenStudio::OccupantVariability::OccupancySimulatorApplier.new(baseline_osw_dir, files_dir)
 
-    seed_file_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/TestModel.osm'
-    weather_file_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/TestModel.epw'
-    run_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/rundir'
+  seed_file_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/TestModel.osm'
+  weather_file_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/TestModel.epw'
+  run_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/rundir'
 
-    osw = apply_occ_sim.create_osw(seed_file_dir, weather_file_dir)
+  osw = apply_occ_sim.create_osw(seed_file_dir, weather_file_dir)
 
-    puts osw
+  puts osw
 
-    runner = OpenStudio::Extension::Runner.new()
-    runner.run_osw(osw, run_dir)
+  runner = OpenStudio::Extension::Runner.new
+  runner.run_osw(osw, run_dir)
 
 
-  end
+end
 
 
 desc 'Try to apply occupancy variability LOD2'
@@ -100,19 +98,57 @@ task :run_apply_LOD2 do
   seed_file_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/TestModel.osm'
   weather_file_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/TestModel.epw'
   run_dir = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/Test_Demonstration/620/rundir'
-
   occ_sch_path = 'E:/Users/Han/Documents/GitHub/OpenStudio_related/openstudio-occupant-variability-gem/lib/files/OccSimulator_out_IDF.csv'
-
   osw = apply_occ_sim.create_osw(seed_file_dir, weather_file_dir, 2, occ_sch_path, occ_sch_path)
-
   puts osw
 
-  runner = OpenStudio::Extension::Runner.new()
+  runner = OpenStudio::Extension::Runner.new
   runner.run_osw(osw, run_dir)
-
 
 end
 
+desc 'Try to apply the whole testing workflow'
+task :run_workflow do
+  puts '---> 1. Create a DOE prototype model as the seed model'
+  model_name = 'small_office_detailed_test'
+  model_type = 'SmallOfficeDetailed'
+  ashrae_vintage = '90.1-2013'
+  climate_zone = 'ASHRAE 169-2006-5A'
+  model_dir = Dir.pwd + '/test_runs/' + model_name + '/'
+  model_creator = OpenStudio::OccupantVariability::ModelCreator.new(
+      model_name,
+      model_type,
+      ashrae_vintage,
+      climate_zone,
+      model_dir
+  )
+  model_creator.generate_prototype_model
+  puts '---> 2. Create a OSW with the seed model and occupancy variability measures'
+  occ_var_ext = OpenStudio::OccupantVariability::Extension.new
+  baseline_osw_dir = occ_var_ext.files_dir
+  files_dir = occ_var_ext.files_dir
+  apply_occ_sim = OpenStudio::OccupantVariability::OccupancyVariabilityApplier.new(baseline_osw_dir, files_dir)
+
+  puts apply_occ_sim
+  # Use relative path
+  seed_file_dir = model_dir + "/#{model_name}.osm"
+  weather_file_dir = model_dir + "/#{model_name}.epw"
+  run_dir = model_dir + '/rundir'
+
+  # Remove old occupancy simulator results if there is any exists
+  helper_extension = OpenStudio::OccupantVariability::Extension.new
+
+  if File.exist?(helper_extension.get_occupancy_schedule_file_dir)
+    File.delete(helper_extension.get_occupancy_schedule_file_dir)
+    puts '---------> Old occupancy schedule file deleted.'
+  end
+
+  osw = apply_occ_sim.create_osw(seed_file_dir, weather_file_dir, 2, helper_extension.get_occupancy_schedule_file_dir)
+
+  runner = OpenStudio::Extension::Runner.new
+  runner.run_osw(osw, run_dir)
+
+end
 
 
 task :run_all => [:run_create_model_test]
